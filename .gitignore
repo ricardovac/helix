@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.local
+*.log
+.DS_Store
+.pnpm-store/
+apps/api/prisma/*.db
+.vite/
+.turbo/
+
+# IDE
+.idea/
+.vscode/

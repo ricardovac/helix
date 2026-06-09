@@ -1,0 +1,23 @@
+{
+  "name": "helix",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma de chatbot com IA — NestJS (clean architecture) + React, Azure OpenAI, Postgres/Mongo/Redis, observabilidade e CI/CD.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "compose:up": "docker compose up -d --build",
+    "compose:down": "docker compose down -v"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  },
+  "packageManager": "pnpm@8.7.4"
+}
