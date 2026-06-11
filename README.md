@@ -1,5 +1,11 @@
 # Helix
 
+[![CI](https://github.com/ricardovac/helix/actions/workflows/ci.yml/badge.svg)](https://github.com/ricardovac/helix/actions/workflows/ci.yml)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?logo=nestjs&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
 Plataforma de **chatbot com IA** construída como projeto de demonstração técnica.
 Monorepo com **NestJS** (clean architecture / ports & adapters) e **React + Vite**,
 integração com **Azure OpenAI** e **AWS Bedrock** (+ provider _mock_ offline), **PostgreSQL + MongoDB + Redis**,
