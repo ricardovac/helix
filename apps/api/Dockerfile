@@ -3,7 +3,8 @@
 
 # ── Builder ───────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@8.7.4 --activate
+# openssl: necessário para o Prisma detectar/carregar o engine certo (OpenSSL 3).
+RUN apk add --no-cache openssl && corepack enable && corepack prepare pnpm@8.7.4 --activate
 WORKDIR /repo
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
@@ -15,7 +16,7 @@ RUN cd apps/api && pnpm prisma generate && pnpm build
 
 # ── Runner ────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
-RUN corepack enable && corepack prepare pnpm@8.7.4 --activate
+RUN apk add --no-cache openssl && corepack enable && corepack prepare pnpm@8.7.4 --activate
 WORKDIR /repo
 ENV NODE_ENV=production
 
@@ -27,5 +28,5 @@ COPY --from=builder /repo/apps/api/prisma ./apps/api/prisma
 
 WORKDIR /repo/apps/api
 EXPOSE 3000
-# Aplica migrations (se DB acessível) e sobe a API.
-CMD ["sh", "-c", "pnpm prisma migrate deploy || pnpm prisma db push --skip-generate || true; node dist/main.js"]
+# Aplica as migrations e sobe a API.
+CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/main.js"]
