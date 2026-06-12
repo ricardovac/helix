@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
 /**
+ * Variáveis opcionais costumam chegar como string vazia via docker-compose
+ * (`${VAR:-}`). Tratamos "" e espaços como ausente para não falhar validações
+ * de campos que só importam quando o provider correspondente está ativo.
+ */
+const blankToUndefined = (v: unknown) =>
+  typeof v === 'string' && v.trim() === '' ? undefined : v;
+
+/**
  * Schema único de configuração da aplicação.
  * Validado no boot — a aplicação não sobe com env inválida (fail fast).
  */
@@ -11,8 +19,10 @@ export const envSchema = z.object({
 
   // Provider de IA
   AI_PROVIDER: z.enum(['azure', 'bedrock', 'mock']).default('mock'),
-  AZURE_OPENAI_ENDPOINT: z.string().url().optional(),
-  AZURE_OPENAI_API_KEY: z.string().optional(),
+  // A URL só é validada quando AI_PROVIDER=azure (ver validateEnv), para que o
+  // modo mock suba mesmo com a variável vazia/placeholder vinda do compose.
+  AZURE_OPENAI_ENDPOINT: z.preprocess(blankToUndefined, z.string().optional()),
+  AZURE_OPENAI_API_KEY: z.preprocess(blankToUndefined, z.string().optional()),
   AZURE_OPENAI_DEPLOYMENT: z.string().default('gpt-4o-mini'),
   AZURE_OPENAI_API_VERSION: z.string().default('2024-08-01-preview'),
 
@@ -42,13 +52,17 @@ export function validateEnv(config: Record<string, unknown>): Env {
     throw new Error(`Configuração de ambiente inválida:\n${issues}`);
   }
 
-  if (
-    parsed.data.AI_PROVIDER === 'azure' &&
-    (!parsed.data.AZURE_OPENAI_ENDPOINT || !parsed.data.AZURE_OPENAI_API_KEY)
-  ) {
-    throw new Error(
-      'AI_PROVIDER=azure requer AZURE_OPENAI_ENDPOINT e AZURE_OPENAI_API_KEY definidos.',
-    );
+  if (parsed.data.AI_PROVIDER === 'azure') {
+    if (!parsed.data.AZURE_OPENAI_ENDPOINT || !parsed.data.AZURE_OPENAI_API_KEY) {
+      throw new Error(
+        'AI_PROVIDER=azure requer AZURE_OPENAI_ENDPOINT e AZURE_OPENAI_API_KEY definidos.',
+      );
+    }
+    try {
+      new URL(parsed.data.AZURE_OPENAI_ENDPOINT);
+    } catch {
+      throw new Error('AZURE_OPENAI_ENDPOINT deve ser uma URL válida.');
+    }
   }
 
   return parsed.data;

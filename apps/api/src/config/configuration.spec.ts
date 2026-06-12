@@ -17,6 +17,30 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ AI_PROVIDER: 'azure' })).toThrow(/AZURE_OPENAI/);
   });
 
+  it('ignora AZURE_OPENAI_ENDPOINT vazio quando provider é mock (caso do compose)', () => {
+    const env = validateEnv({ AI_PROVIDER: 'mock', AZURE_OPENAI_ENDPOINT: '' });
+    expect(env.AI_PROVIDER).toBe('mock');
+    expect(env.AZURE_OPENAI_ENDPOINT).toBeUndefined();
+  });
+
+  it('ignora o endpoint placeholder quando provider é mock', () => {
+    const env = validateEnv({
+      AI_PROVIDER: 'mock',
+      AZURE_OPENAI_ENDPOINT: 'https://<seu-recurso>.openai.azure.com',
+    });
+    expect(env.AI_PROVIDER).toBe('mock');
+  });
+
+  it('falha quando AI_PROVIDER=azure com endpoint inválido', () => {
+    expect(() =>
+      validateEnv({
+        AI_PROVIDER: 'azure',
+        AZURE_OPENAI_ENDPOINT: 'não-é-url',
+        AZURE_OPENAI_API_KEY: 'secret',
+      }),
+    ).toThrow(/URL válida/);
+  });
+
   it('aceita azure com endpoint e key válidos', () => {
     const env = validateEnv({
       AI_PROVIDER: 'azure',
